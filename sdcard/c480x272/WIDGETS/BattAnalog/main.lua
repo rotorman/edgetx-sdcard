@@ -44,7 +44,7 @@ local _options = {
     { "Sensor"            , SOURCE, 0      }, -- default to 'A1'
     { "Color"             , COLOR , YELLOW },
     { "Show_Total_Voltage", BOOL  , 0      }, -- 0=Show as average Lipo cell level, 1=show the total voltage (voltage as is)
-    { "Lithium_Ion"       , BOOL  , 0      }, -- 0=LIPO battery, 1=LI-ION (18650/21500)
+    { "Li_0Po_1Ion_2HV", VALUE , 0,0,2  }, -- 0=LIPO battery, 1=LI-ION (18650/21500), 2=LiHV 4.35V
 }
 
 -- Data gathered from commercial lipo sensors
@@ -82,6 +82,18 @@ local _liionPercentListSplit = {
     { { 3.990, 90 }, { 4.000, 91 }, { 4.010, 92 }, { 4.030, 93 }, { 4.050, 94 } },
     { { 4.070, 95 }, { 4.090, 96 } },
     { { 4.10, 100}, { 4.15,100 }, { 4.20, 100} },
+}
+
+-- TODO!
+local _lihvPercentListSplit = {
+    { { 3.150,  0 }, { 3.243,  1 }, { 3.346,  2 }, { 3.451,  3 }, { 3.551,  4 }, { 3.627,  5 }, { 3.694,  6 }, { 3.751,  7 }, { 3.787,  8 }, { 3.814,  9 }, { 3.829, 10 }, { 3.833, 11 }, { 3.839, 12 }, { 3.842, 13 } },
+    { { 3.855, 14 }, { 3.860, 15 }, { 3.863, 16 }, { 3.865, 17 }, { 3.870, 18 }, { 3.881, 19 }, { 3.885, 20 }, { 3.894, 21 }, { 3.903, 22 }, { 3.906, 23 }, { 3.908, 24 }, { 3.912, 25 }, { 3.917, 26 } },
+    { { 3.924, 27 }, { 3.930, 28 }, { 3.933, 29 }, { 3.936, 30 }, { 3.939, 31 }, { 3.944, 32 }, { 3.947, 33 }, { 3.950, 34 }, { 3.952, 35 }, { 3.955, 36 }, { 3.958, 37 }, { 3.961, 38 }, { 3.965, 39 } },
+    { { 3.968, 40 }, { 3.972, 41 }, { 3.975, 42 }, { 3.979, 43 }, { 3.983, 44 }, { 3.986, 45 }, { 3.990, 46 }, { 3.993, 47 }, { 3.997, 48 }, { 4.000, 49 }, { 4.004, 50 }, { 4.007, 51 }, { 4.010, 52 } },
+    { { 4.013, 53 }, { 4.016, 54 }, { 4.020, 55 }, { 4.024, 56 }, { 4.029, 57 }, { 4.038, 58 }, { 4.043, 59 }, { 4.047, 60 }, { 4.052, 61 }, { 4.056, 62 }, { 4.061, 63 }, { 4.068, 64 } },
+    { { 4.073, 65 }, { 4.078, 66 }, { 4.089, 67 }, { 4,093, 68 }, { 4,099, 69 }, { 4.105, 70 }, { 4.111, 71 }, { 4.118, 72 }, { 4.124, 73 }, { 4.131, 74 }, { 4.137, 75 }, { 4.144, 76 } },
+    { { 4.151, 77 }, { 4.157, 78 }, { 4.164, 79 }, { 4.171, 80 }, { 4.179, 81 }, { 4.186, 82 }, { 4.194, 83 }, { 4.202, 84 }, { 4.212, 85 }, { 4.224, 86 }, { 4.235, 87 }, { 4.245, 88 } },
+    { { 4.255, 89 }, { 4.261, 90 }, { 4.266, 91 }, { 4.270, 92 }, { 4.275, 93 }, { 4.279, 94 }, { 4.285, 95 }, { 4.295, 96 }, { 4.326, 97 }, { 4.329, 98 }, { 4.343, 99 }, { 4.350, 100 } },
 }
 
 local defaultSensor = "RxBt" -- RxBt / A1 / A3/ VFAS / Batt
@@ -125,7 +137,7 @@ local function update(wgt, options)
 
     wgt.options.Show_Total_Voltage = wgt.options.Show_Total_Voltage % 2 -- modulo due to bug that cause the value to be other than 0|1
 
-    log(string.format("wgt.options.Lithium_Ion: %s", wgt.options.Lithium_Ion))
+    log(string.format("wgt.options.Li_0Po_1Ion_2HV: %s", wgt.options.Li_0Po_1Ion_2HV))
 end
 
 local function create(zone, options)
@@ -184,8 +196,11 @@ local function getCellPercent(wgt, cellValue)
     end
 
     local _percentListSplit = _lipoPercentListSplit
-    if wgt.options.Lithium_Ion == 1 then
+    if wgt.options.Li_0Po_1Ion_2HV == 1 then
         _percentListSplit = _liionPercentListSplit
+    end
+    if wgt.options.Li_0Po_1Ion_2HV == 2 then
+        _percentListSplit = _lihvPercentListSplit
     end
 
     for i1, v1 in ipairs(_percentListSplit) do
